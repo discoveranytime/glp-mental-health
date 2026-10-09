@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLP Medicines and Mental Health</title>
+<script>try{var t=localStorage.getItem('gmh-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<style>
+:root{
+  --bg:#0a0f1a; --bg2:#0d1424; --panel:#101a2e; --panel2:#14203a;
+  --line:rgba(148,178,220,.14); --line2:rgba(148,178,220,.22);
+  --ink:#e8eff9; --muted:#93a1bd; --faint:#67748f;
+  --c1:#a78bfa; --c2:#22d3ee; --c3:#e879f9;
+  --warn:#c9a24b; --bad:#c47474; --ok:#7fa36b;
+  --acc-dim:rgba(167,139,250,.10);
+  --grad:linear-gradient(135deg,#a78bfa,#e879f9 50%,#22d3ee);
+  --r:16px; --font:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+[data-theme="light"]{
+  --bg:#eef1f6; --bg2:#e7ebf2; --panel:#f7f9fc; --panel2:#ffffff;
+  --line:rgba(30,50,90,.12); --line2:rgba(30,50,90,.2);
+  --ink:#16233a; --muted:#4c5d78; --faint:#7c8aa3;
+  --c1:#7c3aed; --c2:#0891b2; --c3:#c026d3;
+  --warn:#9a6b23; --bad:#a85a5a; --ok:#5e7f4e;
+  --acc-dim:rgba(124,58,237,.08);
+  --grad:linear-gradient(135deg,#7c3aed,#c026d3 50%,#0891b2);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.65;overflow-x:hidden}
+#ambient{position:fixed;inset:0;z-index:0;pointer-events:none}
+/* PUSHING P watermark */
+#bgtext{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.bgline{position:absolute;left:-25%;width:150%;transform:rotate(-20deg)}
+.bgtrack{display:inline-block;white-space:nowrap;animation:wmdrift var(--spd,120s) linear infinite}
+.bgline.rev .bgtrack{animation-direction:reverse}
+.bgtrack b{font-family:var(--font);font-weight:900;letter-spacing:.04em;color:transparent;
+  -webkit-text-stroke:1px var(--sc,rgba(167,139,250,.13))}
+.bgtrack i{font-style:normal;color:transparent;-webkit-text-stroke:1px rgba(148,178,220,.10);margin:0 .7em}
+.w1{--sc:rgba(167,139,250,.14)}
+.w2{--sc:rgba(34,211,238,.13)}
+@keyframes wmdrift{to{transform:translateX(-50%)}}
+@media(max-width:900px){.bgline.mhide{display:none}}
+@media (prefers-reduced-motion:reduce){.bgtrack{animation:none}html{scroll-behavior:auto}}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:90;background:var(--grad)}
+#themeToggle{position:fixed;top:16px;right:16px;z-index:70;display:flex;background:var(--panel);
+  border:1px solid var(--line2);border-radius:999px;padding:3px;gap:2px}
+#themeToggle button{border:0;background:transparent;color:var(--muted);font-family:var(--font);
+  font-size:.78rem;font-weight:700;padding:6px 12px;border-radius:999px;cursor:pointer}
+#themeToggle button[aria-pressed="true"]{background:var(--acc-dim);color:var(--c1)}
+.layout{display:flex;max-width:1180px;margin:0 auto;position:relative;z-index:1}
+aside.toc{position:sticky;top:0;height:100vh;flex:0 0 250px;padding:90px 18px 30px 26px;overflow:auto}
+aside.toc .t{font-size:.72rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+aside.toc a{display:block;font-size:.83rem;color:var(--muted);text-decoration:none;padding:7px 12px;
+  border-radius:10px;border-left:2px solid transparent;margin-bottom:2px;transition:all .15s}
+aside.toc a:hover{color:var(--ink);background:var(--panel)}
+aside.toc a.on{color:var(--c1);border-left-color:var(--c1);background:var(--acc-dim);font-weight:700}
+.rail{display:none;position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--bg) 90%,transparent);
+  backdrop-filter:blur(10px);padding:10px 16px;gap:8px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.rail a{flex:0 0 auto;font-size:.75rem;font-weight:700;color:var(--muted);text-decoration:none;
+  border:1px solid var(--line2);border-radius:999px;padding:7px 14px;background:var(--panel);white-space:nowrap}
+.rail a.on{color:var(--c1);border-color:var(--c1);background:var(--acc-dim)}
+main{flex:1;min-width:0;padding:0 28px 40px;max-width:860px}
+.hero{padding:84px 0 34px;text-align:center}
+.hero .badge{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:2.5px;color:var(--c1);
+  border:1px solid var(--line2);border-radius:999px;padding:8px 20px;margin-bottom:22px;background:var(--panel)}
+.hero h1{font-size:clamp(2.1rem,5vw,3.4rem);line-height:1.12;font-weight:900;letter-spacing:-.01em;margin-bottom:16px}
+.hero h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.sub{color:var(--muted);font-size:1.05rem;max-width:640px;margin:0 auto 20px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chips span{font-size:.75rem;font-weight:700;color:var(--muted);border:1px solid var(--line2);
+  border-radius:999px;padding:6px 14px;background:var(--panel)}
+.disclaimer{border:1px solid var(--line2);border-left:4px solid var(--warn);background:var(--panel);
+  border-radius:12px;padding:14px 18px;font-size:.85rem;color:var(--muted);margin:26px 0}
+.disclaimer strong{color:var(--ink)}
+.chapter{margin:34px 0;padding:30px 30px 26px;border:2px solid transparent;border-radius:20px;
+  background:linear-gradient(var(--panel),var(--panel)) padding-box,var(--grad) border-box}
+.ch-num{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:38px;
+  border-radius:12px;background:var(--grad);color:#0a0f1a;font-weight:900;font-size:1rem;margin-bottom:14px;padding:0 10px}
+.chapter h2{font-size:1.55rem;margin-bottom:10px;letter-spacing:-.01em}
+.chapter.hg{background:linear-gradient(var(--panel),var(--panel)) padding-box,
+  linear-gradient(135deg,#6729FF,#ff8533) border-box}
+.chapter.hg .ch-num{background:linear-gradient(135deg,#6729FF,#ff8533);color:#fff}
+.hg-pill{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:1.8px;color:#fff;
+  background:linear-gradient(135deg,#6729FF,#ff8533);border-radius:999px;padding:6px 16px;margin-bottom:14px}
+.chapter>p.lead{color:var(--muted);margin-bottom:20px;max-width:660px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:var(--panel2);border:1px solid var(--line);border-top:3px solid var(--c1);
+  border-radius:14px;padding:18px}
+.card.red{border-top-color:var(--bad)}
+.card.green{border-top-color:var(--ok)}
+.card.warn{border-top-color:var(--warn)}
+.card h3{font-size:1rem;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card p{font-size:.88rem;color:var(--muted)}
+.card p strong{color:var(--ink)}
+.tag{font-size:.68rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;border-radius:6px;
+  padding:3px 9px;flex:0 0 auto}
+.tag.red{background:rgba(196,116,116,.14);color:var(--bad)}
+.tag.green{background:rgba(127,163,107,.14);color:var(--ok)}
+.tag.warn{background:rgba(201,162,75,.14);color:var(--warn)}
+.tag.info{background:var(--acc-dim);color:var(--c1)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c2);margin-right:7px;
+  animation:pulse 2.2s ease-in-out infinite;vertical-align:1px}
+@keyframes pulse{0%,100%{opacity:.45;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+.legend{font-size:.78rem;color:var(--faint);margin-top:14px}
+.take{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.take li{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px 16px;
+  font-size:.92rem;color:var(--muted);display:flex;gap:12px;align-items:flex-start}
+.take li::before{content:"→";color:var(--c1);font-weight:900;flex:0 0 auto}
+.take li strong{color:var(--ink)}
+.btt{display:flex;justify-content:center;margin:50px 0 10px}
+.btt a{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-weight:800;font-size:.95rem;
+  color:var(--ink);border:2px solid transparent;border-radius:16px;padding:14px 34px;
+  background:linear-gradient(var(--panel),var(--panel)) padding-box,var(--grad) border-box;
+  transition:transform .16s ease}
+.btt a:hover{transform:translateY(-2px)}
+footer{border-top:1px solid var(--line);margin-top:26px;padding:26px 4px 60px;color:var(--muted);font-size:.85rem}
+footer p{margin-bottom:10px;max-width:680px}
+footer .fine{color:var(--faint);font-size:.8rem}
+@media(max-width:900px){
+  aside.toc{display:none}
+  .rail{display:flex}
+  main{padding:0 16px 40px}
+  .cards{grid-template-columns:1fr}
+  .chapter{padding:24px 18px}
+  .hero{padding:64px 0 26px}
+}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+</style>
+</head>
+<body id="top">
+<div id="progress"></div>
+<div id="themeToggle" role="group" aria-label="Theme">
+  <button id="btnDark" aria-pressed="true">Dark</button><button id="btnLight" aria-pressed="false">Light</button>
+</div>
+<svg id="ambient" aria-hidden="true" focusable="false"></svg>
+<div id="bgtext" aria-hidden="true"><div class="bgline" style="top:4%;font-size:6rem;--spd:138s"><div class="bgtrack"><span><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i></span><span aria-hidden="true"><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i></span></div></div><div class="bgline rev" style="top:22%;font-size:3.2rem;--spd:106s"><div class="bgtrack"><span><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i></span><span aria-hidden="true"><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i></span></div></div><div class="bgline mhide" style="top:40%;font-size:7rem;--spd:162s"><div class="bgtrack"><span><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i></span><span aria-hidden="true"><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i></span></div></div><div class="bgline rev mhide" style="top:58%;font-size:3rem;--spd:100s"><div class="bgtrack"><span><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i></span><span aria-hidden="true"><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i></span></div></div><div class="bgline" style="top:76%;font-size:5rem;--spd:128s"><div class="bgtrack"><span><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i></span><span aria-hidden="true"><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i></span></div></div><div class="bgline rev mhide" style="top:92%;font-size:3.4rem;--spd:148s"><div class="bgtrack"><span><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i></span><span aria-hidden="true"><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i><b class="w1">PUSHING</b><i>·</i><b class="w2">P</b><i>·</i></span></div></div></div>
+<div class="layout">
+  <aside class="toc" aria-label="Contents">
+    <div class="t">Contents</div>
+    <nav id="tocNav"></nav>
+  </aside>
+  <main>
+    <nav class="rail" id="railNav" aria-label="Chapters"></nav>
+
+    <header class="hero">
+      <span class="badge">EVIDENCE-FIRST EXPLAINER</span>
+      <h1>GLP Medicines <span class="grad">&amp; Mental Health</span></h1>
+      <p class="sub">What research actually shows about mood, anxiety, depression, and motivation on GLP-1 medicines — in plain language.</p>
+      <div class="chips"><span>Research-based</span><span>Plain language</span><span>Not medical advice</span></div>
+    </header>
+
+    <div class="disclaimer"><strong>Educational content only — not medical advice.</strong> This page summarizes published research in plain language. It is not a recommendation to start, stop, or change any medicine. If you take a GLP medicine, talk to your doctor about any mood changes.</div>
+
+    <section class="chapter" id="ch-question">
+      <span class="ch-num">1</span>
+      <h2>The question everyone's asking</h2>
+      <p class="lead">GLP medicines like semaglutide, tirzepatide, and liraglutide mainly help with blood sugar and weight. But millions of people now take them — and many wonder what they do to mood, anxiety, depression, and overall mental health. Scientists have looked at this carefully in recent years.</p>
+      <div class="cards">
+        <div class="card">
+          <h3><span class="tag info">Know this</span> What these medicines are</h3>
+          <p>GLP-1-based medicines mimic a natural gut hormone. They are prescribed for <strong>type 2 diabetes and weight management</strong>, and they work largely by regulating appetite, blood sugar, and digestion.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">Know this</span> Why mood matters here</h3>
+          <p>Weight and blood sugar are only part of the picture. <strong>How a medicine affects daily mood, motivation, and anxiety matters just as much</strong> — which is why researchers started asking these questions.</p>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="chapter" id="ch-trials">
+      <span class="ch-num">2</span>
+      <h2>What the big trials show</h2>
+      <p class="lead">The strongest evidence comes from randomized trials that compared the drugs against placebo — tens of thousands of people, watched closely.</p>
+      <div class="cards">
+        <div class="card green">
+          <h3><span class="tag green">Depression &amp; anxiety</span> Similar to placebo</h3>
+          <p>Rates of <strong>depression and anxiety symptoms were similar</strong> between the groups taking GLP medicines and the groups taking placebo.</p>
+        </div>
+        <div class="card green">
+          <h3><span class="tag green">Serious effects</span> Not higher</h3>
+          <p><strong>Serious psychiatric side effects were not higher</strong> in the groups taking GLP medicines. For most users, this is reassuring.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">Keep in mind</span> Averages aren't individuals</h3>
+          <p>Trials show what happens <strong>on average</strong>. They can't capture every individual experience — which is why personal monitoring still matters.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="ch-upsides">
+      <span class="ch-num">3</span>
+      <h2>Possible mental-health upsides</h2>
+      <p class="lead">The research doesn't just rule harm out — some of it points toward genuine mental-health benefits.</p>
+      <div class="cards">
+        <div class="card green">
+          <h3><span class="tag green">Studies show</span> Less worsening</h3>
+          <p>Certain studies found people on semaglutide or liraglutide were <strong>less likely to have their depression or anxiety get worse</strong> compared with periods not taking the drug.</p>
+        </div>
+        <div class="card green">
+          <h3><span class="tag green">Studies show</span> Quality of life up</h3>
+          <p><strong>Quality-of-life scores often improved</strong> during treatment — people rated their day-to-day well-being higher.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">User reports</span> Emotional eating down</h3>
+          <p><span class="dot" aria-hidden="true"></span>Many users report <strong>less urge to eat when stressed or bored</strong> — a welcome change when mood and eating habits are tightly linked.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">Early research</span> Cravings beyond food</h3>
+          <p><span class="dot" aria-hidden="true"></span>Early research and user reports suggest <strong>reduced cravings for alcohol or nicotine</strong> in some people. Still being studied — but a real area of interest.</p>
+        </div>
+      </div>
+      <p class="legend"><span class="dot" aria-hidden="true"></span>= reported by users — stories, not data.</p>
+    </section>
+
+    <section class="chapter" id="ch-why-better">
+      <span class="ch-num">4</span>
+      <h2>Why mood often gets better</h2>
+      <p class="lead">Feeling better on these medicines usually has more than one cause — and most of them are refreshingly ordinary.</p>
+      <div class="cards">
+        <div class="card green">
+          <h3><span class="tag green">Body → mind</span> When the body feels better</h3>
+          <p>Losing weight, having more energy, seeing better blood sugar, <strong>sleeping better, hurting less</strong> — each of these can lift mood on its own. Together, they add up.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">Possible</span> Direct brain effects</h3>
+          <p>GLP-1 receptors exist in brain areas that help control <strong>reward, motivation, and inflammation</strong>. Some scientists think the drugs may reduce brain inflammation and support healthier nerve signaling — which might ease depressive symptoms in some people.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="ch-flat">
+      <span class="ch-num">5</span>
+      <h2>The "flat" feeling, explained</h2>
+      <p class="lead">Not everyone feels the same way — and the differences are worth understanding.</p>
+      <div class="cards">
+        <div class="card green">
+          <h3><span class="tag green">Some feel</span> Brighter</h3>
+          <p>Some people notice <strong>improved mood and motivation</strong> — especially as their physical health turns around.</p>
+        </div>
+        <div class="card warn">
+          <h3><span class="tag warn">Others feel</span> Flat</h3>
+          <p><span class="dot" aria-hidden="true"></span>Others feel <strong>a bit flat or less interested in food-related pleasures</strong> at first. A few report temporary anxiety, especially in the early weeks while the body adjusts.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">Why it happens</span> The calorie-deficit link</h3>
+          <p>The flat feeling is often linked to <strong>being in a calorie deficit</strong>. When the body eats less, motivation and pleasure around food naturally drop — similar to any strict diet. It usually improves as weight stabilizes.</p>
+        </div>
+      </div>
+      <p class="legend"><span class="dot" aria-hidden="true"></span>= reported by users — stories, not data.</p>
+    </section>
+
+    <section class="chapter" id="ch-drk">
+      <span class="ch-num">6</span>
+      <h2>Dr. K: your starting weight matters</h2>
+      <div style="display:flex;gap:18px;align-items:flex-start;margin-bottom:16px">
+        <img src="data:image/jpeg;base64,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" alt="Dr. K — Alok Kanojia" style="width:76px;height:76px;object-fit:cover;border-radius:14px;flex:0 0 auto;border:1px solid var(--line2)">
+        <div>
+          <img src="data:image/png;base64,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" alt="HealthyGamerGG" style="height:36px;width:auto;border-radius:8px;display:block;margin-bottom:10px">
+          <p class="lead" style="margin-bottom:0"><strong style="color:var(--ink)">Dr. K — Alok Kanojia of HealthyGamerGG</strong> — took on this topic in his episode <em>"We Need To Talk About Ozempic"</em> (plus related shorts). His framing: the mental-health impact depends heavily on how overweight someone is when they start.</p>
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <h3><span class="tag info">His core idea</span> Two different trade-offs</h3>
+          <p>For significantly obese people, the huge benefits of major weight loss — <strong>less shame, more ability to do normal activities, better physical health</strong> — often outweigh any negative brain effects. The social and hormonal benefits of resolving severe obesity act as a <strong>counterbalance that thinner users simply don't get</strong> — so for people already near a healthy weight, the drug's direct effects on mood regulation show up more clearly as problems.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">His metaphor</span> A dopamine "speed limit"</h3>
+          <p>He describes GLP-1 drugs as a <strong>governor on dopamine spikes</strong>: they cap the extreme reward peaks from big meals, alcohol, or compulsive behaviors — without lowering everyday baseline dopamine much. Intense cravings get quieter — but the brain's <strong>emotional regulation centers get blunted</strong> along the way, which is where the flatness comes from.</p>
+        </div>
+        <div class="card warn">
+          <h3><span class="tag warn">The trade-off</span> Anhedonia</h3>
+          <p>The same capping can <strong>blunt pleasure and motivation</strong> — what some call the "Ozempic personality": a gradual shrinking of interest in activities that used to feel rewarding.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">Alcohol</span> Same days, less per day</h3>
+          <p>Studies show the drugs often <strong>don't reduce the number of drinking days</strong> — but they do reduce how much is drunk on those days, because the "just one more" craving gets dampened.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">Depression risk</span> Nuanced</h3>
+          <p>Some data suggested higher rates of depression — even <strong>first-time depression</strong> — in certain groups. But when researchers separate people by starting weight, the increased risk appears <strong>mainly in those who were not significantly overweight</strong>. In obese patients, the risk often didn't rise — and could improve with the life changes of major weight loss.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">His framing</span> Both can be true</h3>
+          <p>Some studies show mood improvements, others show risks — <strong>and both can be true depending on the person</strong>. He resists the simple story: the same medicine can improve mental health for someone carrying a lot of excess weight while harming mood regulation in someone closer to a healthy weight.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">His advice</span> Weigh the trade-offs</h3>
+          <p>He encourages people to <strong>weigh these trade-offs carefully</strong> — rather than assuming the drugs are mentally neutral or universally beneficial. The dopamine-blunting that helps with addictive patterns is the same mechanism that can narrow pleasure and drive.</p>
+        </div>
+        <div class="card red">
+          <h3><span class="tag red">Caution</span> Eating disorders cut both ways</h3>
+          <p>The drugs can <strong>help binge-eating patterns</strong> by reducing the reward drive around food — but may <strong>worsen restrictive disorders like anorexia</strong> in vulnerable people. Helpful appetite suppression for one group can be harmful for another.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="ch-dopamine">
+      <span class="ch-num">7</span>
+      <h2>The dopamine cap, simply explained</h2>
+      <p class="lead">The "dopamine cap" is the key mechanism behind both the benefits and the flatness. Here's the simple version.</p>
+      <div class="cards">
+        <div class="card">
+          <h3><span class="tag info">Basics</span> What dopamine does</h3>
+          <p>Dopamine is involved in <strong>motivation, wanting, and the feeling that something is rewarding</strong>. It spikes with highly rewarding things — a big tasty meal, alcohol, games, shopping — and those spikes drive strong cravings.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">The mechanism</span> A ceiling, not a floor</h3>
+          <p>GLP-1 medicines appear to <strong>limit how high the extreme spikes can go</strong> — without wiping out everyday dopamine. Think of it as a ceiling on the biggest reward signals, not a shutdown of the whole system.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">Why it helps</span> Food gets quieter</h3>
+          <p>The intense <strong>"I need that right now"</strong> pull around highly rewarding foods gets quieter. The same dampening applies to the progressive urge for another drink, another cigarette, or other compulsive rewards.</p>
+        </div>
+        <div class="card warn">
+          <h3><span class="tag warn">The cost</span> Milder peaks</h3>
+          <p>When the top end of reward is capped, <strong>peak experiences feel milder</strong> — and for some, the overall sense of excitement or drive in life feels smaller. This is the anhedonia link.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">In the brain</span> Reward circuits</h3>
+          <p>Research points to GLP-1 receptors influencing circuits that connect to <strong>dopamine neurons in reward areas</strong> (pathways involving the ventral tegmental area and nucleus accumbens) — shrinking dopamine responses to rewarding stimuli, especially food.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">One-liner</span> The volume knob</h3>
+          <p>In simple terms: the drugs <strong>turn down the volume on the loudest reward signals</strong> without fully muting the system. Helpful for breaking craving cycles — but peak experiences get less intense too.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="ch-suicide">
+      <span class="ch-num">8</span>
+      <h2>Past concerns — fully investigated</h2>
+      <p class="lead">When scattered reports of suicidal thoughts surfaced early on, health agencies looked into them thoroughly. The follow-up evidence was reassuring.</p>
+      <div class="cards">
+        <div class="card warn">
+          <h3><span class="tag warn">What happened</span> Early reports</h3>
+          <p>Early on, some users reported <strong>suicidal thoughts</strong> after starting these medicines. Regulators took the reports seriously and opened formal safety reviews — exactly what the safety system is for.</p>
+        </div>
+        <div class="card green">
+          <h3><span class="tag green">What the reviews found</span> No clear increase</h3>
+          <p>Large reviews of <strong>clinical trials and real-world data</strong> later found no clear increase in suicidal thinking or behavior linked to these drugs.</p>
+        </div>
+        <div class="card green">
+          <h3><span class="tag green">Jan 2026</span> Warning removed</h3>
+          <p>On January 13, 2026, the FDA asked companies to <strong>remove the suicidal-ideation warning</strong> from the labels of Saxenda, Wegovy, and Zepbound — after reviewing 91 trials with about 108,000 participants found no increased risk.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="ch-safety">
+      <span class="ch-num">9</span>
+      <h2>Staying safe</h2>
+      <p class="lead">The overall picture is reassuring — but individual responses vary, and staying alert matters.</p>
+      <div class="cards">
+        <div class="card red">
+          <h3><span class="tag red">Extra care</span> History of mental-health conditions</h3>
+          <p>Anyone with past <strong>depression, bipolar disorder, or suicidal thoughts</strong> should talk openly with their doctor before starting — and keep talking while using these medicines. Individual responses can differ from the average.</p>
+        </div>
+        <div class="card warn">
+          <h3><span class="tag warn">Watch for</span> Warning signs</h3>
+          <p>Doctors usually ask about mood at check-ups. Feeling <strong>much more anxious, deeply sad, or having new thoughts of self-harm</strong> means contacting a healthcare provider right away. These feelings are usually temporary — but they should never be ignored.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">Still learning</span> Newer drugs</h3>
+          <p>Newer dual and triple agonists like <strong>tirzepatide and retatrutide have less long-term mental-health data</strong> than older drugs — but so far the signals look similar: no clear psychiatric harm, possible quality-of-life gains.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">In crisis</span> Get help now</h3>
+          <p>If you or someone you know is in crisis: <strong>in Canada and the US, call or text 988</strong> — free, confidential, 24/7.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="ch-takeaways">
+      <span class="ch-num">10</span>
+      <h2>Takeaways</h2>
+      <ul class="take">
+        <li><span><strong>The strongest evidence:</strong> GLP medicines are not linked to higher rates of depression or suicidal thoughts compared with placebo.</span></li>
+        <li><span><strong>Many people feel stable — or better,</strong> especially as weight, energy, sleep, and physical health improve.</span></li>
+        <li><span><strong>Experiences vary:</strong> genetics, starting mental health, how much weight is lost, sleep, stress, and other medications all play a role.</span></li>
+        <li><span><strong>Starting weight shapes the trade-off</strong> — Dr. K's key point: the dopamine cap helps most when intense cravings are the problem.</span></li>
+        <li><span><strong>A smaller number notice temporary mood shifts</strong> — flatness or early anxiety that often settles with time.</span></li>
+        <li><span><strong>Open communication with a doctor</strong> remains the best way to stay safe and get the most benefit.</span></li>
+      </ul>
+    </section>
+
+    <section class="chapter hg" id="ch-drk-feature">
+      <span class="ch-num">11</span>
+      <h2>About Dr. K</h2>
+      <p class="lead">This infographic is loosely based on his framing of the topic — the idea that GLP medicines aren't simply "good" or "bad" for mental health, and that the answer depends on the person.</p>
+      <div style="display:flex;gap:18px;align-items:flex-start;margin-bottom:16px">
+        <img src="data:image/jpeg;base64,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" alt="Dr. K — Alok Kanojia" style="width:96px;height:96px;object-fit:cover;border-radius:14px;flex:0 0 auto;border:1px solid var(--line2)">
+        <div>
+          <span class="hg-pill">HEALTHYGAMERGG</span>
+          <p style="font-size:.92rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--ink)">Dr. Alok Kanojia — "Dr. K"</strong> — is a Harvard-trained psychiatrist (Tufts MD, residency at Mass General / McLean) and co-founder of <strong style="color:var(--ink)">HealthyGamerGG</strong>, the mental-health platform he runs with his wife Kruti. His Twitch and YouTube channels reach millions with psychoeducational conversations about depression, anxiety, addiction, and purpose — speaking to the internet generation in its own language.</p>
+          <p style="font-size:.92rem;color:var(--muted);margin-bottom:10px">His path there was personal: a gaming addiction nearly derailed his own college career before years studying meditation in India helped him turn it around. That experience shaped his signature blend of <strong style="color:var(--ink)">neuroscience, psychiatry, and contemplative tradition</strong> — what his community calls "AOE healing." He's also the author of <em>How to Raise a Healthy Gamer</em> (2024).</p>
+        </div>
+      </div>
+      <a href="https://www.youtube.com/@HealthyGamerGG" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;border:1px solid var(--line2);border-radius:12px;padding:10px 16px;background:var(--panel2);margin-bottom:18px">
+        <svg width="26" height="26" viewBox="0 0 28 28" aria-hidden="true"><rect x="1" y="5" width="26" height="18" rx="5" fill="#FF0000"/><path d="M12 10.5v7l6-3.5z" fill="#fff"/></svg>
+        <span style="font-size:.88rem;font-weight:700;color:var(--ink)">HealthyGamerGG on YouTube</span>
+      </a>
+      <div class="cards">
+        <div class="card">
+          <h3><span class="tag info">His take</span> It depends on your starting point</h3>
+          <p>His core argument from <em>"We Need To Talk About Ozempic"</em>: for significantly obese people, the life-changing benefits of major weight loss usually outweigh the downsides — <strong>while people starting near a healthy weight feel the dopamine-blunting effects more directly</strong>.</p>
+        </div>
+        <div class="card">
+          <h3><span class="tag info">His metaphor</span> The dopamine speed limit</h3>
+          <p>He frames these drugs as a <strong>governor on dopamine spikes</strong> — capping extreme reward peaks (food, alcohol, compulsive behaviors) without crushing everyday baseline dopamine. Helpful for cravings; potentially flattening for pleasure and drive.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="btt">
+      <a href="#top"><span style="background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent">↑</span> Back to Top</a>
+    </div>
+
+    <footer>
+      <p><strong style="color:var(--ink)">Educational content only — not medical advice.</strong> This page summarizes published research in plain language. It is not a recommendation to start, stop, or change any medicine, and it does not replace professional guidance. If you take a GLP medicine and notice mood changes, talk to your doctor.</p>
+      <p class="fine">Compiled Oct 2026.</p>
+    </footer>
+  </main>
+</div>
+<script>
+(function(){
+  var root=document.documentElement;
+  var CHAPTERS=[["ch-question","1 · The question"],["ch-trials","2 · What the trials show"],["ch-upsides","3 · Possible upsides"],["ch-why-better","4 · Why mood improves"],["ch-flat","5 · The flat feeling"],["ch-drk","6 · Dr. K's take"],["ch-dopamine","7 · The dopamine cap"],["ch-suicide","8 · Past concerns"],["ch-safety","9 · Staying safe"],["ch-takeaways","10 · Takeaways"],["ch-drk-feature","11 · About Dr. K"]];
+  /* theme */
+  function setTheme(t){root.setAttribute('data-theme',t);try{localStorage.setItem('gmh-theme',t);}catch(e){}
+    document.getElementById('btnDark').setAttribute('aria-pressed',t==='dark');
+    document.getElementById('btnLight').setAttribute('aria-pressed',t==='light');}
+  document.getElementById('btnDark').onclick=function(){setTheme('dark');};
+  document.getElementById('btnLight').onclick=function(){setTheme('light');};
+  /* toc */
+  var nav=document.getElementById('tocNav'),rail=document.getElementById('railNav');
+  CHAPTERS.forEach(function(c){
+    var a=document.createElement('a');a.href='#'+c[0];a.textContent=c[1];a.dataset.ch=c[0];nav.appendChild(a);
+    var r=document.createElement('a');r.href='#'+c[0];r.textContent=c[1];r.dataset.ch=c[0];rail.appendChild(r);});
+  function go(e){var h=this.getAttribute('href');if(!h||h[0]!=='#')return;var el=document.querySelector(h);if(!el)return;
+    e.preventDefault();var rm=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({behavior:rm?'auto':'smooth',block:'start'});history.replaceState(null,'',h);}
+  document.querySelectorAll('#tocNav a,#railNav a').forEach(function(a){a.addEventListener('click',go);});
+  document.querySelector('.btt a').addEventListener('click',function(e){e.preventDefault();
+    var rm=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({top:0,behavior:rm?'auto':'smooth'});history.replaceState(null,' ','#top');});
+  /* scrollspy + progress */
+  var secs=CHAPTERS.map(function(c){return document.getElementById(c[0]);});
+  function onScroll(){
+    var y=window.scrollY,h=document.body.scrollHeight-window.innerHeight;
+    document.getElementById('progress').style.width=(h>0?(y/h*100):0)+'%';
+    var cur=secs[0].id;
+    secs.forEach(function(s){if(window.scrollY>=s.getBoundingClientRect().top+window.scrollY-200)cur=s.id;});
+    document.querySelectorAll('#tocNav a,#railNav a').forEach(function(a){
+      a.classList.toggle('on',a.dataset.ch===cur);});}
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+  /* ambient dots */
+  try{
+    var svg=document.getElementById('ambient'),W=window.innerWidth,H=window.innerHeight;
+    svg.setAttribute('width',W);svg.setAttribute('height',H);svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    var NS='http://www.w3.org/2000/svg',cols=['167,139,250','34,211,238','232,121,249'],dots=[];
+    for(var i=0;i<140;i++){var c=document.createElementNS(NS,'circle');
+      var x=Math.random()*W,y=Math.random()*H,r=1.4+Math.random()*2.2,o=.30+Math.random()*.35;
+      c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r',r);
+      c.setAttribute('fill','rgba('+cols[i%3]+','+o.toFixed(2)+')');
+      svg.appendChild(c);dots.push({e:c,x:x,y:y,ph:Math.random()*6.28,sp:.3+Math.random()*.7});}
+    var rm=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(!rm){(function tick(t){dots.forEach(function(d){var dx=Math.sin(t/2400*d.sp+d.ph)*14,dy=Math.cos(t/3100*d.sp+d.ph)*10;
+      d.e.setAttribute('transform','translate('+dx.toFixed(1)+','+dy.toFixed(1)+')');});
+      requestAnimationFrame(tick);})(0);}
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
